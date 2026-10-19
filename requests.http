@@ -1,0 +1,42 @@
+### Works with the IntelliJ HTTP client or the VS Code "REST Client" extension.
+@gw = http://localhost:8080
+
+### Catalogue
+GET {{gw}}/api/products
+
+### Stock levels
+GET {{gw}}/api/inventory
+
+### 1) Happy path -> CONFIRMED
+POST {{gw}}/api/orders
+Content-Type: application/json
+
+{ "customerEmail": "asha@example.com",
+  "items": [ { "skuCode": "IPHONE-15", "quantity": 1 }, { "skuCode": "USB-C-CABLE", "quantity": 2 } ] }
+
+### 2) Not enough stock (only 5 MacBooks) -> CANCELLED by inventory
+POST {{gw}}/api/orders
+Content-Type: application/json
+
+{ "customerEmail": "ravi@example.com", "items": [ { "skuCode": "MACBOOK-AIR", "quantity": 10 } ] }
+
+### 3) Payment declined (> 1,50,000) -> CANCELLED + stock released (compensation)
+POST {{gw}}/api/orders
+Content-Type: application/json
+
+{ "customerEmail": "meera@example.com", "items": [ { "skuCode": "MACBOOK-AIR", "quantity": 2 } ] }
+
+### 4) Unknown product -> 400 (not retried, doesn't trip the circuit breaker)
+POST {{gw}}/api/orders
+Content-Type: application/json
+
+{ "customerEmail": "x@example.com", "items": [ { "skuCode": "DOES-NOT-EXIST", "quantity": 1 } ] }
+
+### Watch the saga (paste an id from above)
+GET {{gw}}/api/orders
+
+### Payments
+GET {{gw}}/api/payments
+
+### "Emails" sent
+GET {{gw}}/api/notifications
